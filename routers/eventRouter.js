@@ -149,7 +149,7 @@ router.put("/:id", auth, async (req, res) => {
             'Location: ' + location + '\n' +
             'Description: ' + description + '\n' +
             'Event ID: ' + eventId + '\n' +
-            'Enter the Event ID at http://localhost:3000/rsvpEvent to RSVP'
+            'Enter the Event ID at https://link2rsvp.netlify.app/rsvpEvent to RSVP'
 
         });
 
