@@ -3,6 +3,7 @@ const User = require("../models/usermodel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validate } = require("../models/usermodel");
+//test
 
 // sign up
 
