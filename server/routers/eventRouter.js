@@ -3,8 +3,24 @@ const Event = require("../models/eventModel");
 const auth = require("../middleware/auth");
 const nodemailer = require('nodemailer');
 const twelve = require('twentyfour-to-twelve');
+const Contact = require("../models/contactModel");
+const multer = require("multer");
+const parser = require("../middleware/cloudinary.config");
+const cloudinary = require("cloudinary").v2;
 
 
+const storage = multer.diskStorage({
+    destination: (req,file,cb) => {
+        cb(null,"./uploads/");
+    },
+    filename: (req,file,cb) => {
+        cb(null,Date.now() + file.originalname);
+    }
+})
+
+const upload = multer({
+    storage: storage
+});
 
 
 let transporter = nodemailer.createTransport({
@@ -15,13 +31,33 @@ let transporter = nodemailer.createTransport({
     }
 });
 
+
+
 // creating events in mongoDB
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, parser.single("articleImage"), async (req, res) => {
     try {
-        const { name, time, location, title, description} = req.body;
+       // const { name, time, location, title, description, articleImage} = req.body;
+
+      
+       
+
+       const name = req.body.name;
+       const time = req.body.time;
+       const location = req.body.location;
+       const title = req.body.title;
+       const description = req.body.description;
+       const articleImage = req.file.path;
+
+      
 
         const newEvent = new Event({
-            name, time, location, title, description, user: req.user,
+            name,
+            time,
+            location,
+            title,
+            description,
+            articleImage,
+            user: req.user,
         });
 
         //validation
@@ -35,19 +71,18 @@ router.post("/", auth, async (req, res) => {
         res.json(savedEvent);
 
         var twelveHour = twelve(time);
-/*
-        let transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user:process.env.EMAIL,
-                pass:process.env.PASSWORD
-            }
-        });
-        */
+    
+        
+         // Creates an array of the current contacts assigned to a user
+         // Then iterates throught that array when sending emails
+         
 
+        const userEmail = await Contact.find({user: req.user});
+       
+        for (var i in userEmail) {
         await transporter.sendMail({
-            from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
-            to: "poc.demo.email@gmail.com",
+            from:'"Link2RSVP" <poc.demo.email@gmail.com>',
+            to: userEmail[i].email,
             subject: title,
             text:
             'EVENT DETAILS' + '\n' + '\n' +
@@ -56,9 +91,10 @@ router.post("/", auth, async (req, res) => {
             'Location: ' + location + '\n' +
             'Description: ' + description + '\n' +
             'Event ID: ' + newEvent._id + '\n' +
-            'Enter the Event ID at https://link2rsvp.netlify.app/rsvpEvent to RSVP'
+            'Enter the Event ID at http://localhost:3000/rsvpEvent to RSVP',
 
         });
+    }
 
     } catch (err) {
         console.error(err);
@@ -137,10 +173,11 @@ router.put("/:id", auth, async (req, res) => {
         res.json(savedEvent);
 
         var twelveHour = twelve(time);
-
+        const emailEdit = await Contact.find({user: req.user});
+        for (var i in emailEdit) {
         await transporter.sendMail({
             from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
-            to: "poc.demo.email@gmail.com",
+            to: emailEdit[i].email,
             subject: title + " details have changed!",
             text:
             'New Event Details are Below' + '\n' + '\n' +
@@ -149,9 +186,10 @@ router.put("/:id", auth, async (req, res) => {
             'Location: ' + location + '\n' +
             'Description: ' + description + '\n' +
             'Event ID: ' + eventId + '\n' +
-            'Enter the Event ID at https://link2rsvp.netlify.app/rsvpEvent to RSVP'
+            'Enter the Event ID at http://localhost:3000/rsvpEvent to RSVP'
 
         });
+    }
 
 
     } catch (err) {
@@ -180,6 +218,8 @@ router.delete("/:id", auth, async (req, res) => {
 
         if(existingEvent.user.toString() !== req.user)
             return res.status(401).json({errorMessage: "Unauthorized."});
+
+            
 
         await existingEvent.delete();
 

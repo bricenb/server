@@ -3,7 +3,6 @@ const User = require("../models/usermodel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validate } = require("../models/usermodel");
-//test
 
 // sign up
 
@@ -16,23 +15,23 @@ router.post("/", async (req, res) => {
             // checks to make sure all fileds are there
 
         if(!email || !password || !passwordVerify || !name)
-            return res.status(400).json({errorMessage: "Please enter all fields"});
+            return res.status(401).json({errorMessage: "Please enter all fields"});
 
             // checks lenght of password given
 
         if (password.length < 6)
-            return res.status(400).json({errorMessage: "Please enter a password of at least 6 characters"});
+            return res.status(401).json({errorMessage: "Please enter a password of at least 6 characters"});
 
             // ensures that the passwords match
 
         if (password !== passwordVerify)
-            return res.status(400).json({errorMessage: "Passwords do not match"});
+            return res.status(401).json({errorMessage: "Passwords do not match"});
 
             // checks to see if a user with that email exist already
 
         const existingUser = await User.findOne({ email });
         if (existingUser) 
-            return res.status(400).json({errorMessage: "an account with this email already esists."});
+            return res.status(401).json({errorMessage: "an account with this email already esists."});
     
         //hasing the password for storage in mongoDB
 
@@ -58,9 +57,7 @@ router.post("/", async (req, res) => {
         // send token in HTTP only cookie
 
      res.cookie("token", token, {
-        httpOnly: true,
-        sameSite: "none",
-        secure: true
+        httpOnly: true
         })
         .send();
 
@@ -105,8 +102,6 @@ router.post("/login", async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true
         })
             .send();
 
@@ -122,8 +117,6 @@ router.post("/login", async (req, res) => {
 router.get("/logout", (req, res) => {
     res.cookie("token", "", {
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
         expires: new Date(0)
     })
     .send();

@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
+
 dotenv.config();
 
 //setup express server
@@ -14,7 +15,7 @@ app.listen(PORT, () =>console.log('server started on port: ' + PORT));
 
 app.use(express.json());
 app.use(cors({
-    origin: ["http://localhost:3000", "https://link2rsvp.netlify.app"],
+    origin: "http://localhost:3000",
     credentials: true,
 }));
 app.use(cookieParser());
@@ -31,6 +32,11 @@ mongoose.connect(process.env.MDB_CONNECT, {
    }
 );
 
+const bodyParser = require("body-parser");
+const { urlencoded } = require("body-parser");
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 //set up routes
 
@@ -38,3 +44,4 @@ app.use("/auth", require("./routers/userRouter"));
 app.use("/event", require("./routers/eventRouter"));
 app.use("/contact", require("./routers/contactRouter"));
 app.use("/email", require("./routers/emailRouter"));
+app.use('/uploads', express.static('uploads'));

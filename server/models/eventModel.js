@@ -10,6 +10,7 @@ const eventSchema = new mongoose.Schema({
     location: {type: String, required: true},
     title: {type: String, required: true},
     description: {type: String, required: true},
+    articleImage: {type: String, required: false},
     
     //qrCode: {type: String, required: false },
 
