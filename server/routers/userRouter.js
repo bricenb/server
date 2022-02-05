@@ -57,7 +57,9 @@ router.post("/", async (req, res) => {
         // send token in HTTP only cookie
 
      res.cookie("token", token, {
-        httpOnly: true
+        httpOnly: true,
+        sameSite: "none",
+        secure: true
         })
         .send();
 
@@ -102,6 +104,8 @@ router.post("/login", async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
+            sameSite: "none",
+            secure: true
         })
             .send();
 
