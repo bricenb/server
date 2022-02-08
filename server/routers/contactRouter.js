@@ -1,15 +1,17 @@
 const router = require("express").Router();
 const Contact = require("../models/contactModel");
 const auth = require("../middleware/auth");
+const uniqid = require('uniqid');
 
 // creates a contact in mongoDB
 
 router.post("/", auth, async (req, res) => {
     try {
         const { name, email} = req.body;
+        const contactID = uniqid();
 
         const newContact = new Contact({
-            name, email, user: req.user
+            name, email, contactID, user: req.user
         });
 
         //validation of contact
@@ -46,18 +48,17 @@ router.get("/", auth, async (req,res) => {
 
 // deletes contacts from mongoDB
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:contactId", async (req, res) => {
     try {
 
-        const contactId = req.params.id;
-        
-        
+        const iD = req.params.contactId;
 
         //validation
-        if (!contactId)
-            return res.status(400).json({erroerMessage: "customerId not given"});
+        if (!iD)
+            return res.status(402).json({erroerMessage: "customerId not given"});
 
-        const existingContact = await Contact.findById(contactId);
+        const existingContact = await Contact.findById(iD);
+        
         if (!existingContact)
             return res.status(400).json({erroerMessage: "No customer with this ID was found"});
 
@@ -66,7 +67,7 @@ router.delete("/:id", auth, async (req, res) => {
         res.json(existingContact);
 
     } catch(err) {
-        res.status(500).send();
+        res.status(501).send();
     }
 });
 

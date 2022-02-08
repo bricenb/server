@@ -1,26 +1,13 @@
 const router = require("express").Router();
 const Event = require("../models/eventModel");
+const User = require("../models/usermodel");
 const auth = require("../middleware/auth");
 const nodemailer = require('nodemailer');
 const twelve = require('twentyfour-to-twelve');
 const Contact = require("../models/contactModel");
 const multer = require("multer");
 const parser = require("../middleware/cloudinary.config");
-const cloudinary = require("cloudinary").v2;
-
-
-const storage = multer.diskStorage({
-    destination: (req,file,cb) => {
-        cb(null,"./uploads/");
-    },
-    filename: (req,file,cb) => {
-        cb(null,Date.now() + file.originalname);
-    }
-})
-
-const upload = multer({
-    storage: storage
-});
+const uniqid = require('uniqid');
 
 
 let transporter = nodemailer.createTransport({
@@ -47,6 +34,7 @@ router.post("/", auth, parser.single("articleImage"), async (req, res) => {
        const title = req.body.title;
        const description = req.body.description;
        const articleImage = req.file.path;
+       const eventID = uniqid();
 
       
 
@@ -57,6 +45,7 @@ router.post("/", auth, parser.single("articleImage"), async (req, res) => {
             title,
             description,
             articleImage,
+            eventID,
             user: req.user,
         });
 
@@ -90,8 +79,13 @@ router.post("/", auth, parser.single("articleImage"), async (req, res) => {
             'Time: ' + twelveHour + '\n' +
             'Location: ' + location + '\n' +
             'Description: ' + description + '\n' +
-            'Event ID: ' + newEvent._id + '\n' +
-            'Enter the Event ID at http://localhost:3000/rsvpEvent to RSVP',
+            'RSVP ID: ' + newEvent._id + '\n' +
+            userEmail[i]._id + '\n' +
+            'Enter the Event ID at ' + `http://localhost:3000/rsvpEvent/${newEvent._id}/${userEmail[i]._id}` + ' to RSVP' +
+            '\n' +
+            '\n' +
+            '\n' +
+            'To unsubscribe from Emails, click here ' + `http://localhost:3000/unSubscribe/${userEmail[i]._id}`
 
         });
     }
@@ -118,11 +112,17 @@ router.get("/", auth, async (req,res) => {
     }
 });
 
-router.put("/:id/attendnumber", async (req, res) => {
+router.put("/:idEvent/:idContact/attendnumber", async (req, res) => {
     try {
-        const eventId = req.params.id;
+        
+        const eventId = req.params.idEvent;
+        const rsvpId = req.params.idContact;
 
         const orginalEvent = await Event.findById(eventId);
+        const contactId = await Contact.findById(rsvpId);
+        const hostEmail = await User.findById(orginalEvent.user)
+        
+        
         if (!orginalEvent)
             return res.status(400).json({errorMessage: "No event with this ID was found"});
        
@@ -130,7 +130,17 @@ router.put("/:id/attendnumber", async (req, res) => {
         orginalEvent.attendNumber += 1;
 
         const savedEvent = await orginalEvent.save();
+
+        await transporter.sendMail({
+            from: '"Link2RSVP" <poc.demo.email@gmail.com>',
+            to: hostEmail.email,
+            subject: contactId.name + " has RSVPed",
+            text: contactId.name + ' has rsvped to ' + orginalEvent.title
+        });
+
         res.json(savedEvent);
+
+        
 
 
     } catch (err) {
@@ -141,9 +151,10 @@ router.put("/:id/attendnumber", async (req, res) => {
 
 // editing event
 
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", parser.single("articleImage"), auth, async (req, res) => {
     try {
         const {name, time, location, title, description} = req.body;
+        const articleImage = req.file.path;
         const eventId = req.params.id;
 
         //validation
@@ -167,6 +178,8 @@ router.put("/:id", auth, async (req, res) => {
         orginalEvent.location = location;
         orginalEvent.description = description;
         orginalEvent.title = title;
+        orginalEvent.articleImage = articleImage;
+        oringalEvent.eventID = orginalEvent.eventID;
 
         const savedEvent = await orginalEvent.save();
 
@@ -218,8 +231,6 @@ router.delete("/:id", auth, async (req, res) => {
 
         if(existingEvent.user.toString() !== req.user)
             return res.status(401).json({errorMessage: "Unauthorized."});
-
-            
 
         await existingEvent.delete();
 

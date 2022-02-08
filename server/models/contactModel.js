@@ -7,7 +7,8 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 const contactSchema = new mongoose.Schema({
     name: {type: String, required: true},
     email: {type: String, required: true},
-    user: {type: ObjectId, required: true}
+    user: {type: ObjectId, required: true},
+    contactID: {type: String, required: true},
 },{
     timestamps: true
 });
