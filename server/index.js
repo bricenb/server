@@ -15,7 +15,7 @@ app.listen(PORT, () =>console.log('server started on port: ' + PORT));
 
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: "https://link2rsvp.herokuapp.com",
     credentials: true,
 }));
 app.use(cookieParser());
