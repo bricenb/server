@@ -15,7 +15,7 @@ app.listen(PORT, () =>console.log('server started on port: ' + PORT));
 
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: "https://wonderful-feynman-2756d5.netlify.app",
     credentials: true,
 }));
 app.use(cookieParser());
