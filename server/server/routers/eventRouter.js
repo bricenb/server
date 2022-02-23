@@ -25,13 +25,18 @@ router.post("/", auth, parser.single("articleImage"), async (req, res) => {
     try {
        // const { name, time, location, title, description, articleImage} = req.body;
 
-      
+       if(req.body.vaxReq == "on") {
+        vaxReq = true;
+        } else {
+        vaxReq = false;
+        }
        
 
        const name = req.body.name;
        const time = req.body.time;
        const location = req.body.location;
        const title = req.body.title;
+       const rsvpLimit = req.body.rsvpNum;
        const description = req.body.description;
        const articleImage = req.file.path;
        const eventID = uniqid();
@@ -44,6 +49,8 @@ router.post("/", auth, parser.single("articleImage"), async (req, res) => {
             location,
             title,
             description,
+            rsvpLimit,
+            vaxReq,
             articleImage,
             eventID,
             user: req.user,
@@ -57,40 +64,10 @@ router.post("/", auth, parser.single("articleImage"), async (req, res) => {
 
         const savedEvent = await newEvent.save();
 
-        res.json(savedEvent);
-
-        var twelveHour = twelve(time);
-    
-        
-         // Creates an array of the current contacts assigned to a user
-         // Then iterates throught that array when sending emails
-         
-
-        const userEmail = await Contact.find({user: req.user});
-       
-        for (var i in userEmail) {
-        await transporter.sendMail({
-            from:'"Link2RSVP" <poc.demo.email@gmail.com>',
-            to: userEmail[i].email,
-            subject: title,
-            text:
-            'EVENT DETAILS' + '\n' + '\n' +
-            'Date: ' + name + '\n' +
-            'Time: ' + twelveHour + '\n' +
-            'Location: ' + location + '\n' +
-            'Description: ' + description + '\n' +
-            'RSVP ID: ' + newEvent._id + '\n' +
-            userEmail[i]._id + '\n' +
-            'Enter the Event ID at ' + `http://localhost:3000/rsvpEvent/${newEvent._id}/${userEmail[i]._id}` + ' to RSVP' +
-            '\n' +
-            '\n' +
-            '\n' +
-            'To unsubscribe from Emails, click here ' + `http://localhost:3000/unSubscribe/${userEmail[i]._id}`
-
-        });
+        res.json(savedEvent);  
     }
 
-    } catch (err) {
+     catch (err) {
         console.error(err);
         res.status(500).send();
     }
@@ -112,19 +89,32 @@ router.get("/", auth, async (req,res) => {
     }
 });
 
+
 router.put("/:idEvent/:idContact/attendnumber", async (req, res) => {
     try {
         
         const eventId = req.params.idEvent;
         const rsvpId = req.params.idContact;
 
+        const message = req.body.message;
+        
+       
+
+
         const orginalEvent = await Event.findById(eventId);
         const contactId = await Contact.findById(rsvpId);
         const hostEmail = await User.findById(orginalEvent.user)
+
+
         
         
-        if (!orginalEvent)
+        if (!orginalEvent) {
             return res.status(400).json({errorMessage: "No event with this ID was found"});
+        }
+
+        if (orginalEvent.attendNumber == orginalEvent.rsvpLimit) {
+            return res.status(500).json({errorMessage: "No more spots left to RSVP"});
+        }
        
         
         orginalEvent.attendNumber += 1;
@@ -135,10 +125,14 @@ router.put("/:idEvent/:idContact/attendnumber", async (req, res) => {
             from: '"Link2RSVP" <poc.demo.email@gmail.com>',
             to: hostEmail.email,
             subject: contactId.name + " has RSVPed",
-            text: contactId.name + ' has rsvped to ' + orginalEvent.title
+            text: contactId.name + ' has rsvped to ' + orginalEvent.title +
+            '\n' +
+            message
         });
+        
 
         res.json(savedEvent);
+        res.status(200).json({Message: "You have RSVPed"});
 
         
 
@@ -153,13 +147,13 @@ router.put("/:idEvent/:idContact/attendnumber", async (req, res) => {
 
 router.put("/:id", parser.single("articleImage"), auth, async (req, res) => {
     try {
-        const {name, time, location, title, description} = req.body;
+        const {name, time, location, message} = req.body;
         const articleImage = req.file.path;
         const eventId = req.params.id;
-
+        console.log(message);
         //validation
 
-        if (!time || !location || !title || !description) {
+        if (!time || !location || !name) {
             return res.status(400).json({erroerMessage: "you need to enter all fields."});
         }
 
@@ -176,32 +170,37 @@ router.put("/:id", parser.single("articleImage"), auth, async (req, res) => {
         orginalEvent.name = name;
         orginalEvent.time = time;
         orginalEvent.location = location;
-        orginalEvent.description = description;
-        orginalEvent.title = title;
+        orginalEvent.description = orginalEvent.description;
+        orginalEvent.title = orginalEvent.title;
         orginalEvent.articleImage = articleImage;
-        oringalEvent.eventID = orginalEvent.eventID;
+        orginalEvent.eventID = orginalEvent.eventID;
 
+        
         const savedEvent = await orginalEvent.save();
-
-        res.json(savedEvent);
+        
 
         var twelveHour = twelve(time);
-        const emailEdit = await Contact.find({user: req.user});
+        
+        const emailEdit = await Contact.find({eventID: eventId});
+        
         for (var i in emailEdit) {
+       
         await transporter.sendMail({
             from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
             to: emailEdit[i].email,
-            subject: title + " details have changed!",
+            subject: orginalEvent.title + " details have changed!",
             text:
             'New Event Details are Below' + '\n' + '\n' +
+             message + 
             'Date: ' + name + '\n' +
             'Time: ' + twelveHour + '\n' +
             'Location: ' + location + '\n' +
-            'Description: ' + description + '\n' +
-            'Event ID: ' + eventId + '\n' +
-            'Enter the Event ID at http://localhost:3000/rsvpEvent to RSVP'
+            'Description: ' + orginalEvent.description + '\n' +
+            'Event ID: ' + eventId + '\n'
 
         });
+       
+        res.json(savedEvent);
     }
 
 
