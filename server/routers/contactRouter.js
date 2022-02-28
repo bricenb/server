@@ -128,10 +128,10 @@ router.put("/:contactId/event/add/:eventId", async (req, res) => {
                "<h3>" + "Discription: " + emailEvent[0].description + "<h3>" +
                "\n" +
                "\n" +
-               "<h4>" + "If you would like to RSVP to " + emailEvent[0].title + " please click the link " + `http://localhost:3000/rsvpEvent/${emailEvent[0]._id}/${existingContact._id}/0` +
+               "<h4>" + "If you would like to RSVP to " + emailEvent[0].title + " please click the link " + `https://link2rsvp.netlify.app/rsvpEvent/${emailEvent[0]._id}/${existingContact._id}/0` +
                "\n" +
                "\n" +
-               "<h4>" + "If you would like to unsubscribe from eamils from LINK2RSVP please click the link " + `http://localhost:3000/unSubscribe/${existingContact._id}`
+               "<h4>" + "If you would like to unsubscribe from eamils from LINK2RSVP please click the link " + `https://link2rsvp.netlify.app/unSubscribe/${existingContact._id}`
     })
 
 
