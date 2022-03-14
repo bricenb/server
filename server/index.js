@@ -46,3 +46,4 @@ app.use("/event", require("./routers/eventRouter"));
 app.use("/contact", require("./routers/contactRouter"));
 app.use("/email", require("./routers/emailRouter"));
 app.use('/uploads', express.static('uploads'));
+app.use('/vaxloopup', require("./routers/vaxloopup"));
