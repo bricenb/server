@@ -7,7 +7,17 @@ router.get("/", async (req, res) => {
         //console.log(apple);
         JSON.stringify(apple)
         //console.log(apple);
-        const browser = await puppeteer.launch();
+        const chromeOptions = {
+            headless: true,
+            defaultViewport: null,
+            args: [
+                "--incognito",
+                "--no-sandbox",
+                "--single-process",
+                "--no-zygote"
+                ],
+        };
+        const browser = await puppeteer.launch(chromeOptions);
         const page = await browser.newPage();
         await page.goto("https://www.modernatx.com/covid19vaccine-eua/providers/vial-lookup");
         //console.log(apple);
