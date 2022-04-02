@@ -126,7 +126,7 @@ router.put("/:idEvent/:idContact/attendnumber", async (req, res) => {
         await orginalEvent.save();
 
         await transporter.sendMail({
-            from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
+            from:'"Link2RSVP" <poc.demo.email@gmail.com>',
             to: hostEmail.email,
             subject: contactId.name + " has RSVPed",
             text: contactId.name + ' has rsvped to ' + orginalEvent.title +
@@ -161,7 +161,7 @@ router.put("/message/:id", auth, async (req, res) => {
         for (var i in contacts) {
             
             await transporter.sendMail({
-                from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
+                from:'"Link2RSVP" <poc.demo.email@gmail.com>',
                 to: contacts[i].email,
                 subject: orginalEvent.title + " Message",
                 text:
@@ -194,7 +194,7 @@ router.put("/update", parser.single("articleImage"), auth, async (req, res) => {
         for (var i in emailEdit) {
        
             await transporter.sendMail({
-                from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
+                from:'"Link2RSVP" <poc.demo.email@gmail.com>',
                 to: emailEdit[i].email,
                 subject: orginalEvent.title + " details have changed!",
                 text:
@@ -257,7 +257,7 @@ router.put("/:id", parser.single("articleImage"), auth, async (req, res) => {
         for (var i in emailEdit) {
        
         await transporter.sendMail({
-            from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
+            from:'"Link2RSVP" <poc.demo.email@gmail.com>',
             to: emailEdit[i].email,
             subject: orginalEvent.title + " details have changed!",
             text:
