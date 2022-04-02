@@ -6,9 +6,19 @@ router.post("/", async (req, res) => {
         
         const { lotNum, lotProvider } = req.body;
         JSON.stringify(lotNum);
+        const chromeOptions = {
+            headless: true,
+            defaultViewport: null,
+            args: [
+                "--incognito",
+                "--no-sandbox",
+                "--single-process",
+                "--no-zygote"
+                ],
+        };
         //Moderna lot number look up
         if (lotProvider === "moderna") {
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch(chromeOptions);
             const page = await browser.newPage();
             await page.goto("https://www.modernatx.com/covid19vaccine-eua/providers/vial-lookup");
             await page.type("#lotNumber", lotNum);
@@ -28,7 +38,7 @@ router.post("/", async (req, res) => {
         } else if (lotProvider === "johnson") {
             //J&J lot number lookup
             //J&J lot number for testing 1805022
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch(chromeOptions);
             const page = await browser.newPage();
             await page.goto("https://vaxcheck.jnj/search");
             await page.click(".PausePopup_continueButton__1FF_Z.btn.btn-none");
