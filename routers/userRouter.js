@@ -142,7 +142,7 @@ router.put("/passwordreset", async (req, res) => {
         
 
         await transporter.sendMail({
-            from:'"Link2RSVP" <link2rsvp.email.bot@gmail.com>',
+            from:'"Link2RSVP" <poc.demo.email@gmail.com>',
             to: existingUser.email,
             subject: "Password Reset",
             text:
