@@ -202,6 +202,8 @@ router.put("/newpass", async (req, res) => {
 router.get("/logout", (req, res) => {
     res.cookie("token", "", {
         httpOnly: true,
+        samesite: "none",
+        secure: true,
         expires: new Date(0)
     })
     .send();
