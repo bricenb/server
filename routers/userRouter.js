@@ -147,7 +147,7 @@ router.put("/passwordreset", async (req, res) => {
             subject: "Password Reset",
             text:
             'To reset your password, please follow the link below' + '\n' +
-            `https://www.link2rsvp.com/newpasswordcreate/${existingUser._id}` + '\n' +
+            `https://link2rsvp.netlify.app/newpasswordcreate/${existingUser._id}` + '\n' +
             'If you did not request for your password to be changed,' + '\n' +
             'Ignore this email.'
         })
