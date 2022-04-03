@@ -15,7 +15,7 @@ app.listen(PORT, () =>console.log('server started on port: ' + PORT));
 
 app.use(express.json());
 app.use(cors({
-    origin: ["https://link2rsvp.netlify.app", "https://www.link2rsvp.com/home"],
+    origin: ["https://link2rsvp.netlify.app", "https://www.link2rsvp.com"],
     credentials: true,
 }));
 app.use(cookieParser());
