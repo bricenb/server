@@ -152,7 +152,7 @@ router.put("/passwordreset", async (req, res) => {
             'Ignore this email.'
         })
 
-        res.status(200);
+        res.status(200).json({succMessage: "request received"});;
 
     } catch (err) {
         console.error(err);
